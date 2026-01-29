@@ -67,7 +67,7 @@ async function main() {
     const redStarterCards = shuffledCards.slice(0, 10);
     const blueStarterCards = shuffledCards.slice(10, 20);
 
-    async function createStarterDeck(
+    async function createStarterDeck(       
         userId: number,
         username: string,
         cards: typeof createdCards
