@@ -1,7 +1,7 @@
 import { Request, Response, Router } from 'express'
 import bcrypt from 'bcrypt'
 import jwt from 'jsonwebtoken'
-import prisma from "../client";
+import { prisma } from "../database";
 // import { authenticateToken } from "../auth.middleware";
 
 export const authRouter = Router()
@@ -13,7 +13,7 @@ authRouter.post('/sign-up', async (req: Request, res: Response) => {
 
     try {
     // 1.Valide les données
-        if(email === '' || username === '' || password === '') {
+        if(!email || !username || !password) {
             return res.status(400).json({ error: "Données non completes"})
         }
 
