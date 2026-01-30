@@ -1,5 +1,4 @@
 import { Request, Response, Router } from 'express'
-import { authenticateToken } from "../auth.middleware";
 import { prisma } from '../database';
 
 
@@ -7,7 +6,7 @@ export const cardsRouter = Router()
 
 // GET /cards
 // Accessible via GET /cards
-cardsRouter.get('/', authenticateToken, async (_req: Request, res: Response) => {
+cardsRouter.get('/', async (_req: Request, res: Response) => {
 
     try {
         // cartes triées dans l'ordre croissant en fonction de son numéro dans le pokedex
