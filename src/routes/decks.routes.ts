@@ -12,9 +12,9 @@ decksRouter.post('/', authenticateToken, async (req: Request, res: Response) => 
     try {
         const { name, cards } = req.body
 
-        // 1. Verifie l'authentification
-        if(!req.userId) {
-            return res.status(401).json({ error: "Utilisateur non identifié" })
+        // 1. Verifie si l'utilisateur est authentifié
+        if (!req.userId) {
+            return res.status(401).json({ error: "Utilisateur non authentifié" })
         }
 
         // 2. Verifie si le nom est present
@@ -63,10 +63,6 @@ decksRouter.post('/', authenticateToken, async (req: Request, res: Response) => 
 // Accessible via GET /decks/mine
 decksRouter.get('/mine', authenticateToken, async (req: Request, res: Response) => {
     try {
-        // 1. Verifie l'authentification
-        if(!req.userId) {
-            return res.status(401).json({ error: 'Utilisateur non identifié' })
-        }
         
         // Recherche du deck
         const decks = await prisma.deck.findMany( {
@@ -97,14 +93,12 @@ decksRouter.get('/mine', authenticateToken, async (req: Request, res: Response) 
 // Accessible via GET /decks/:id
 decksRouter.get('/:id', authenticateToken, async (req: Request, res: Response) => {
     try {
-        // 1. Verifie l'authentification
-        if (!req.userId) {
-            return res.status(401).json({ error: 'Utilisateur non identifié' })
-        }
-
         // Recherche du deck
-        const deck = await prisma.deck.findUnique({
-            where: { id: parseInt(req.params.id) },
+        const deck = await prisma.deck.findFirst({
+            where: { 
+                id: parseInt(req.params.id),
+                userid: req.userId
+            },
             select: {
                 id: true,
                 name: true,
@@ -113,14 +107,9 @@ decksRouter.get('/:id', authenticateToken, async (req: Request, res: Response) =
             }
         })
 
-        // Verifie si le deck existe
+        // Verifie si le deck existe et appartient à l'utilisateur
         if(!deck) {
             return res.status(404).json({ error: 'Id deck non existant' })
-        }
-
-        // Verifie si l'utilisateur est associé au deck
-        if(deck.userid !== req.userId) {
-            return res.status(403).json({ error: 'Le deck n appartient pas à l utilisateur' })
         }
 
         // Retourne le deck de l'utilisateur
@@ -138,16 +127,13 @@ decksRouter.get('/:id', authenticateToken, async (req: Request, res: Response) =
 decksRouter.patch('/:id', authenticateToken, async (req: Request, res: Response) => {
     try {
         const { name, cards } = req.body
-
-
-        // 1. Verification de l'utilisateur
-        if (!req.userId) {
-            return res.status(401).json({ error: 'Utilisateur non identifié' })
-        }
         
         // 2. Recuperation du deck
-        const deck = await prisma.deck.findUnique({
-            where: { id: parseInt(req.params.id) },
+        const deck = await prisma.deck.findFirst({
+            where: { 
+                id: parseInt(req.params.id),
+                userid: req.userId
+            },
             select: {
                 id: true,
                 name: true,
@@ -156,14 +142,9 @@ decksRouter.patch('/:id', authenticateToken, async (req: Request, res: Response)
             }
         })
 
-        // 3. Verifie si le deck existe
+        // 3. Verifie si le deck existe et appartient à l'utilisateur
         if (!deck) {
             return res.status(404).json({ error: 'Id deck non existant' })
-        }
-
-        // 4. Deck n'appartient pas a l'utilisateur
-        if (deck.userid !== req.userId) {
-            return res.status(403).json({ error: 'Le deck n appartient pas à l utilisateur' })
         }
 
         // Verifie si les cartes existent en cherchant si apres la recherche on a bien 10 cartes
@@ -206,14 +187,12 @@ decksRouter.patch('/:id', authenticateToken, async (req: Request, res: Response)
 // Accessible via DELETE /decks/:id
 decksRouter.delete('/:id', authenticateToken, async (req: Request, res: Response) => {
     try {
-        // 1. Verifie l'authentification
-        if (!req.userId) {
-            return res.status(401).json({ error: 'Utilisateur non identifié' })
-        }
-
         // Recherche du deck
-        const deck = await prisma.deck.findUnique({
-            where: { id: parseInt(req.params.id) },
+        const deck = await prisma.deck.findFirst({
+            where: { 
+                id: parseInt(req.params.id),
+                userid: req.userId
+            },
             select: {
                 id: true,
                 name: true,
@@ -222,14 +201,9 @@ decksRouter.delete('/:id', authenticateToken, async (req: Request, res: Response
             }
         })
 
-        // Verifie si le deck existe
+        // Verifie si le deck existe et appartient à l'utilisateur
         if (!deck) {
             return res.status(404).json({ error: 'Id deck non existant' })
-        }
-
-        // Verifie si l'utilisateur est associé au deck
-        if (deck.userid !== req.userId) {
-            return res.status(403).json({ error: 'Le deck n appartient pas à l utilisateur' })
         }
 
         // Supresssion des cartes
