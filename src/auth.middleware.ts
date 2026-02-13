@@ -1,15 +1,6 @@
 import { NextFunction, Request, Response } from 'express'
 import jwt from 'jsonwebtoken'
 
-// Étendre le type Request pour ajouter userId
-declare global {
-  namespace Express {
-    interface Request {
-      userId?: number
-    }
-  }
-}
-
 export const authenticateToken = (
   req: Request,
   res: Response,
