@@ -1,0 +1,314 @@
+paths:
+  /decks:
+    post:
+      tags:
+        - Decks
+      summary: Créer un nouveau deck
+      description: |
+        Crée un nouveau deck appartenant à l'utilisateur authentifié.
+        Le deck doit contenir exactement 10 cartes valides.
+        Les cartes sont vérifiées pour s'assurer qu'elles existent en base.
+      operationId: createDeck
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DeckCreate'
+            example:
+              name: Mon premier deck
+              cards: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+      responses:
+        '201':
+          description: Deck créé avec succès
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessMessage'
+              example:
+                message: Deck créé
+        '400':
+          description: Données invalides
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              examples:
+                missingName:
+                  value:
+                    error: Nom manquant
+                wrongCardCount:
+                  value:
+                    error: Un deck doit contenir 10 cartes exactement
+                invalidCards:
+                  value:
+                    error: Certaines cartes sont invalides
+        '401':
+          description: Token JWT manquant ou invalide
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              examples:
+                missingToken:
+                  value:
+                    error: Token manquant
+                invalidToken:
+                  value:
+                    error: Token invalide ou expiré
+        '500':
+          description: Erreur serveur
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error: Erreur serveur
+
+  /decks/mine:
+    get:
+      tags:
+        - Decks
+      summary: Récupérer mes decks
+      description: |
+        Récupère la liste complète de tous les decks appartenant à l'utilisateur authentifié.
+        Chaque deck inclut ses cartes associées.
+      operationId: getMyDecks
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Decks récupérés avec succès
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Deck'
+              example:
+                - id: 1
+                  name: Mon premier deck
+                  userid: 5
+                  deckCards: []
+                - id: 2
+                  name: Mon deck compétitif
+                  userid: 5
+                  deckCards: []
+        '401':
+          description: Token JWT manquant ou invalide
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              examples:
+                missingToken:
+                  value:
+                    error: Token manquant
+                invalidToken:
+                  value:
+                    error: Token invalide ou expiré
+        '500':
+          description: Erreur serveur
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error: Erreur serveur
+
+  /decks/{id}:
+    get:
+      tags:
+        - Decks
+      summary: Récupérer un deck spécifique
+      description: |
+        Récupère les détails d'un deck spécifique identifié par son ID.
+        Vérifie que le deck appartient bien à l'utilisateur authentifié.
+      operationId: getDeckById
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: ID du deck à récupérer
+          schema:
+            type: integer
+            format: int32
+            example: 1
+      responses:
+        '200':
+          description: Deck récupéré avec succès
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Deck'
+              example:
+                id: 1
+                name: Mon premier deck
+                userid: 5
+                deckCards: []
+        '404':
+          description: Deck non trouvé ou n'appartient pas à l'utilisateur
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error: Id deck non existant
+        '401':
+          description: Token JWT manquant ou invalide
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              examples:
+                missingToken:
+                  value:
+                    error: Token manquant
+                invalidToken:
+                  value:
+                    error: Token invalide ou expiré
+        '500':
+          description: Erreur serveur
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error: Erreur serveur
+
+    patch:
+      tags:
+        - Decks
+      summary: Mettre à jour un deck
+      description: |
+        Met à jour le nom et/ou les cartes d'un deck spécifique.
+        Le deck doit toujours contenir exactement 10 cartes après modification.
+      operationId: updateDeck
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: ID du deck à mettre à jour
+          schema:
+            type: integer
+            format: int32
+            example: 1
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DeckUpdate'
+            example:
+              name: Mon deck amélioré
+              cards: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+      responses:
+        '200':
+          description: Deck mis à jour avec succès
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessMessage'
+              example:
+                message: Deck modifier
+        '404':
+          description: Deck non trouvé ou n'appartient pas à l'utilisateur
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error: Id deck non existant
+        '400':
+          description: Données invalides
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error: Certaines cartes sont invalides ou pas assez de cartes
+        '401':
+          description: Token JWT manquant ou invalide
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              examples:
+                missingToken:
+                  value:
+                    error: Token manquant
+                invalidToken:
+                  value:
+                    error: Token invalide ou expiré
+        '500':
+          description: Erreur serveur
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error: Erreur serveur
+
+    delete:
+      tags:
+        - Decks
+      summary: Supprimer un deck
+      description: |
+        Supprime un deck spécifique et toutes ses cartes associées.
+        Cette opération est irréversible.
+      operationId: deleteDeck
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: ID du deck à supprimer
+          schema:
+            type: integer
+            format: int32
+            example: 1
+      responses:
+        '200':
+          description: Deck supprimé avec succès
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessMessage'
+              example:
+                message: " supression reussi"
+        '404':
+          description: Deck non trouvé ou n'appartient pas à l'utilisateur
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error: Id deck non existant
+        '401':
+          description: Token JWT manquant ou invalide
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              examples:
+                missingToken:
+                  value:
+                    error: Token manquant
+                invalidToken:
+                  value:
+                    error: Token invalide ou expiré
+        '500':
+          description: Erreur serveur
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error: Erreur serveur
