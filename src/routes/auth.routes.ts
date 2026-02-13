@@ -1,6 +1,7 @@
-import { Request, Response, Router } from 'express'
 import bcrypt from 'bcrypt'
+import { Request, Response, Router } from 'express'
 import jwt from 'jsonwebtoken'
+
 import { prisma } from '../database'
 // import { authenticateToken } from "../auth.middleware";
 

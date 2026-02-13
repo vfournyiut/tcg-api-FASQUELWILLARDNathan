@@ -1,8 +1,10 @@
-import { createServer } from 'http'
-import { env } from './env'
-import express from 'express'
-import cors from 'cors'
 import 'dotenv/config'
+
+import cors from 'cors'
+import express from 'express'
+import { createServer } from 'http'
+
+import { env } from './env'
 import { authRouter } from './routes/auth.routes'
 import { cardsRouter } from './routes/cards.routes'
 import { decksRouter } from './routes/decks.routes'
