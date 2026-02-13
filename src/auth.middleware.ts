@@ -10,6 +10,27 @@ declare global {
     }
 }
 
+/**
+ * Middleware d'authentification JWT
+ * 
+ * Valide le token JWT fourni dans l'en-tête Authorization et ajoute l'ID utilisateur à l'objet Request.
+ * Ce middleware doit être utilisé pour protéger les routes qui nécessitent une authentification.
+ * 
+ * @param {Request} req - Objet requête Express. Sera enrichi avec la propriété `userId` si l'authentification réussit
+ * @param {Response} res - Objet réponse Express
+ * @param {NextFunction} next - Fonction callback pour passer au middleware suivant ou à la route
+ * 
+ * @returns {void} Appelle `next()` si le token est valide, sinon envoie une réponse d'erreur
+ * 
+ * @throws {401} Si le token est manquant dans l'en-tête Authorization (format: "Bearer <token>")
+ * @throws {401} Si le token est invalide ou expiré
+ * 
+ * @example
+ * // Utilisation dans une route protégée
+ * router.get('/decks', authenticateToken, (req: Request, res: Response) => {
+ *   // req.userId contient l'ID de l'utilisateur authentifié
+ * })
+ */
 export const authenticateToken = (
     req: Request,
     res: Response,
