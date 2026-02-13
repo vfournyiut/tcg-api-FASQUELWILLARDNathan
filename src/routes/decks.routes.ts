@@ -12,11 +12,6 @@ decksRouter.post('/', authenticateToken, async (req: Request, res: Response) => 
     try {
         const { name, cards } = req.body
 
-        // 1. Verifie si l'utilisateur est authentifié
-        if (!req.userId) {
-            return res.status(401).json({ error: "Utilisateur non authentifié" })
-        }
-
         // 2. Verifie si le nom est present
         if(!name) {
             return res.status(400).json({ error: "Nom manquant" })
@@ -42,7 +37,7 @@ decksRouter.post('/', authenticateToken, async (req: Request, res: Response) => 
         await prisma.deck.create({
             data: {
                 name,
-                userid: req.userId,
+                userid: req.userId!,
                 deckCards: {
                     create: foundCards.map((card) => ({
                         cardId: card.id,
