@@ -12,54 +12,47 @@ decksRouter.post(
   authenticateToken,
   async (req: Request, res: Response) => {
     try {
-      const { name, cards } = req.body
+        const { name, cards } = req.body
 
-      // 1. Verifie si l'utilisateur est authentifié
-      if (!req.userId) {
-        return res.status(401).json({ error: 'Utilisateur non authentifié' })
-      }
+        // 2. Verifie si le nom est present
+        if(!name) {
+            return res.status(400).json({ error: "Nom manquant" })
+        }
 
-      // 2. Verifie si le nom est present
-      if (!name) {
-        return res.status(400).json({ error: 'Nom manquant' })
-      }
+        // 3. Verifie que le deck contient exactement 10 cartes
+        if(cards.length !== 10) {
+            return res.status(400).json({ error: "Un deck doit contenir 10 cartes exactement" })
+        }
 
-      // 3. Verifie que le deck contient exactement 10 cartes
-      if (cards.length !== 10) {
-        return res
-          .status(400)
-          .json({ error: 'Un deck doit contenir 10 cartes exactement' })
-      }
+        // Verifie si les cartes existent en cherchant si apres la recherche on a bien 10 cartes
+        const foundCards = await prisma.card.findMany({
+            where: {
+                pokedexNumber: { in: cards }
+            }
+        })
 
-      // Verifie si les cartes existent en cherchant si apres la recherche on a bien 10 cartes
-      const foundCards = await prisma.card.findMany({
-        where: {
-          pokedexNumber: { in: cards },
-        },
-      })
+        if(foundCards.length !== 10) {
+            return res.status(400).json({ error: "Certaines cartes sont invalides" })
+        }
 
-      if (foundCards.length !== 10) {
-        return res
-          .status(400)
-          .json({ error: 'Certaines cartes sont invalides' })
-      }
+        // créer le deck
+        await prisma.deck.create({
+            data: {
+                name,
+                userid: req.userId!,
+                deckCards: {
+                    create: foundCards.map((card) => ({
+                        cardId: card.id,
+                    })),
+                },
+            },
+        })
+        return res.status(201).json({ message: "Deck créé" })
 
-      // créer le deck
-      await prisma.deck.create({
-        data: {
-          name,
-          userid: req.userId,
-          deckCards: {
-            create: foundCards.map((card) => ({
-              cardId: card.id,
-            })),
-          },
-        },
-      })
-      return res.status(201).json({ message: 'Deck créé' })
-    } catch (error) {
-      console.error('Erreur lors de la création du deck:', error)
-      return res.status(500).json({ error: 'Erreur serveur' })
+
+    } catch(error) {
+        console.error('Erreur lors de la création du deck:', error)
+        return res.status(500).json({ error: 'Erreur serveur' })
     }
   },
 )
