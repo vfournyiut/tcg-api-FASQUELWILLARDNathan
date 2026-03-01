@@ -1,0 +1,146 @@
+paths:
+  /auth/sign-up:
+    post:
+      tags:
+        - Authentication
+      summary: Inscription d'un nouvel utilisateur
+      description: |
+        Crée un nouveau compte utilisateur avec email, username et mot de passe.
+        Le mot de passe est hashé avec bcrypt avant stockage.
+        Retourne un token JWT valide 7 jours.
+      operationId: signUp
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserSignUp'
+            example:
+              email: user@example.com
+              username: john_doe
+              password: securePassword123
+      responses:
+        '201':
+          description: Inscription réussie - Utilisateur créé
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - message
+                  - token
+                  - user
+                properties:
+                  message:
+                    type: string
+                    example: Inscription réussie
+                  token:
+                    type: string
+                    format: jwt
+                    example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+                  user:
+                    type: object
+                    properties:
+                      email:
+                        type: string
+                        example: user@example.com
+                      username:
+                        type: string
+                        example: john_doe
+        '400':
+          description: Données manquantes ou invalides
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              examples:
+                missingData:
+                  value:
+                    error: Données non completes
+        '409':
+          description: Email ou username déjà existant
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error: Username ou mail invalide
+        '500':
+          description: Erreur serveur
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error: Erreur serveur
+
+  /auth/sign-in:
+    post:
+      tags:
+        - Authentication
+      summary: Connexion utilisateur
+      description: |
+        Authentifie un utilisateur avec son email et mot de passe.
+        Valide le mot de passe contre le hash stocké en base.
+        Retourne un token JWT valide 1 heure.
+      operationId: signIn
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserSignIn'
+            example:
+              email: user@example.com
+              password: securePassword123
+      responses:
+        '200':
+          description: Connexion réussie
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - message
+                  - token
+                  - user
+                properties:
+                  message:
+                    type: string
+                    example: Connexion réussie
+                  token:
+                    type: string
+                    format: jwt
+                    example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+                  user:
+                    type: object
+                    required:
+                      - id
+                      - name
+                      - email
+                    properties:
+                      id:
+                        type: integer
+                        example: 1
+                      name:
+                        type: string
+                        example: john_doe
+                      email:
+                        type: string
+                        example: user@example.com
+        '401':
+          description: Email ou mot de passe incorrect
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error: Email ou mot de passe incorrect
+        '500':
+          description: Erreur serveur
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error: Erreur serveur

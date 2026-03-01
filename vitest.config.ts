@@ -1,4 +1,4 @@
-import {defineConfig} from 'vitest/config';
+import { defineConfig } from 'vitest/config';
 import path from 'path';
 
 export default defineConfig({
@@ -23,6 +23,7 @@ export default defineConfig({
                 'src/env.ts',
                 'src/index.ts',
                 'src/docs/**',
+                'src/swagger/**',
                 'tests/**',
                 'src/sockets/**',
                 'src/models/**',

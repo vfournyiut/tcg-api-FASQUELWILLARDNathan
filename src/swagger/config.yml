@@ -1,0 +1,313 @@
+openapi: 3.0.0
+info:
+  title: TCG API - Pokemon Cards Management
+  description: |
+    API pour la gestion des cartes et decks Pokemon-like. 
+    Permet aux utilisateurs de s'inscrire, se connecter, et créer des decks avec des cartes.
+  version: 1.0.0
+  contact:
+    name: Support API TCG
+    email: support@tcg-api.com
+  license:
+    name: MIT
+
+servers:
+  - url: http://localhost:3000/api
+    description: Serveur de développement
+  - url: http://localhost:3000
+    description: Serveur de développement (racine)
+
+tags:
+  - name: Health
+    description: Endpoints de vérification de l'état du serveur
+  - name: Authentication
+    description: Endpoints d'authentification et gestion des utilisateurs
+  - name: Cards
+    description: Endpoints pour récupérer les cartes Pokemon
+  - name: Decks
+    description: Endpoints pour gérer les decks d'utilisateurs
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: |
+        Token JWT obtenu après inscription ou connexion.
+        Format: Authorization: Bearer <token>
+        Durée de validité: 1 heure pour sign-in, 7 jours pour sign-up
+
+  schemas:
+    # Schémas d'erreur
+    Error:
+      type: object
+      required:
+        - error
+      properties:
+        error:
+          type: string
+          description: Message d'erreur descriptif
+          example: Token invalide ou expiré
+
+    # Schémas utilisateur
+    User:
+      type: object
+      required:
+        - id
+        - username
+        - email
+      properties:
+        id:
+          type: integer
+          format: int32
+          description: ID unique de l'utilisateur
+          example: 1
+        username:
+          type: string
+          description: Nom d'utilisateur unique
+          example: john_doe
+          minLength: 3
+          maxLength: 50
+        email:
+          type: string
+          format: email
+          description: Email unique de l'utilisateur
+          example: user@example.com
+        password:
+          type: string
+          format: password
+          description: Mot de passe hashé (non retourné dans les réponses)
+          example: "hashedpassword123"
+
+    UserSignUp:
+      type: object
+      required:
+        - email
+        - username
+        - password
+      properties:
+        email:
+          type: string
+          format: email
+          description: Email unique de l'utilisateur
+          example: user@example.com
+        username:
+          type: string
+          description: Nom d'utilisateur unique
+          example: john_doe
+          minLength: 3
+          maxLength: 50
+        password:
+          type: string
+          format: password
+          description: Mot de passe en clair (sera hashé)
+          example: securePassword123
+          minLength: 6
+          maxLength: 100
+
+    UserSignIn:
+      type: object
+      required:
+        - email
+        - password
+      properties:
+        email:
+          type: string
+          format: email
+          description: Email de l'utilisateur
+          example: user@example.com
+        password:
+          type: string
+          format: password
+          description: Mot de passe en clair
+          example: securePassword123
+
+    # Schémas de réponse d'authentification
+    AuthSuccessResponse:
+      type: object
+      required:
+        - message
+        - token
+        - user
+      properties:
+        message:
+          type: string
+          description: Message de confirmation
+          example: Inscription réussie
+        token:
+          type: string
+          format: jwt
+          description: Token JWT à utiliser dans les requêtes protégées
+          example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+        user:
+          $ref: '#/components/schemas/User'
+
+    # Schémas des cartes
+    Card:
+      type: object
+      required:
+        - id
+        - name
+        - hp
+        - attack
+        - type
+        - pokedexNumber
+        - imgUrl
+      properties:
+        id:
+          type: integer
+          format: int32
+          description: ID unique de la carte
+          example: 1
+        name:
+          type: string
+          description: Nom de la carte Pokemon
+          example: Bulbasaur
+        hp:
+          type: integer
+          format: int32
+          description: Points de vie de la carte
+          example: 45
+          minimum: 0
+        attack:
+          type: integer
+          format: int32
+          description: Valeur d'attaque de la carte
+          example: 49
+          minimum: 0
+        type:
+          type: string
+          description: Type du Pokemon
+          enum:
+            - grass
+            - fire
+            - water
+            - electric
+            - ice
+            - fighting
+            - poison
+            - ground
+            - flying
+            - psychic
+            - bug
+            - rock
+            - ghost
+            - dragon
+            - dark
+            - steel
+            - fairy
+          example: grass
+        pokedexNumber:
+          type: integer
+          format: int32
+          description: Numéro du Pokédex
+          example: 1
+          minimum: 1
+        imgUrl:
+          type: string
+          format: uri
+          description: URL de l'image de la carte
+          example: https://example.com/bulbasaur.png
+
+    CardsListResponse:
+      type: object
+      required:
+        - cards
+      properties:
+        cards:
+          type: array
+          items:
+            $ref: '#/components/schemas/Card'
+          description: Liste complète des cartes disponibles
+
+    # Schémas des decks
+    DeckCard:
+      type: object
+      required:
+        - cardId
+      properties:
+        cardId:
+          type: integer
+          format: int32
+          description: ID de la carte dans le deck
+          example: 1
+
+    DeckCreate:
+      type: object
+      required:
+        - name
+        - cards
+      properties:
+        name:
+          type: string
+          description: Nom du deck
+          example: Mon premier deck
+          minLength: 1
+          maxLength: 100
+        cards:
+          type: array
+          items:
+            type: integer
+            format: int32
+          description: Liste de 10 numéros de cartes (identifiants ou numéros Pokédex)
+          example: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+          minItems: 10
+          maxItems: 10
+
+    DeckUpdate:
+      type: object
+      properties:
+        name:
+          type: string
+          description: Nouveau nom du deck
+          example: Mon deck amélioré
+          minLength: 1
+          maxLength: 100
+        cards:
+          type: array
+          items:
+            type: integer
+            format: int32
+          description: Nouvelle liste de 10 cartes (si fourni)
+          example: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+          minItems: 10
+          maxItems: 10
+
+    Deck:
+      type: object
+      required:
+        - id
+        - name
+        - userid
+        - deckCards
+      properties:
+        id:
+          type: integer
+          format: int32
+          description: ID unique du deck
+          example: 1
+        name:
+          type: string
+          description: Nom du deck
+          example: Mon premier deck
+        userid:
+          type: integer
+          format: int32
+          description: ID de l'utilisateur propriétaire du deck
+          example: 5
+        deckCards:
+          type: array
+          items:
+            $ref: '#/components/schemas/DeckCard'
+          description: Cartes du deck (relation many-to-many)
+
+    SuccessMessage:
+      type: object
+      required:
+        - message
+      properties:
+        message:
+          type: string
+          description: Message de confirmation de l'opération
+          example: Opération réussie

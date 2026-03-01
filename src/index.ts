@@ -1,8 +1,10 @@
-import {createServer} from "http";
-import {env} from "./env";
+import { createServer } from "http";
+import { env } from "./env";
 import express from "express";
 import cors from "cors";
 import 'dotenv/config'
+import swaggerUi from 'swagger-ui-express'
+import { swaggerSpec } from "./swagger";
 import { authRouter } from "./routes/auth.routes";
 import { cardsRouter } from "./routes/cards.routes";
 import { decksRouter } from "./routes/decks.routes";
@@ -24,9 +26,20 @@ app.use(express.json());
 // Serve static files (Socket.io test client)
 app.use(express.static('public'));
 
+// Swagger Documentation
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec, {
+    swaggerOptions: {
+        persistAuthorization: true, // Persiste le token d'authentification
+        docExpansion: 'list', // Affiche les endpoints en mode liste
+        defaultModelsExpandDepth: 1, // Profondeur d'expansion des modèles
+    },
+    customCss: '.swagger-ui .topbar { background: linear-gradient(90deg, #667eea 0%, #764ba2 100%); }',
+    customSiteTitle: 'TCG API Documentation'
+}));
+
 // Health check endpoint
 app.get("/api/health", (_req, res) => {
-    res.json({status: "ok", message: "TCG Backend Server is running"});
+    res.json({ status: "ok", message: "TCG Backend Server is running" });
 });
 
 app.use('/api/auth', authRouter)
@@ -43,6 +56,7 @@ if (require.main === module) {
     try {
         httpServer.listen(env.PORT, () => {
             console.log(`\n🚀 Server is running on http://localhost:${env.PORT}`);
+            console.log(`📚 Swagger Documentation available at http://localhost:${env.PORT}/api-docs`);
             console.log(`🧪 Socket.io Test Client available at http://localhost:${env.PORT}`);
         });
     } catch (error) {

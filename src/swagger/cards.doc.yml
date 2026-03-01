@@ -1,0 +1,49 @@
+paths:
+  /cards:
+    get:
+      tags:
+        - Cards
+      summary: Récupérer toutes les cartes
+      description: |
+        Récupère la liste complète de toutes les cartes disponibles dans la base de données.
+        Les cartes sont triées par ordre croissant du numéro du Pokédex.
+        Aucune authentification requise.
+      operationId: getAllCards
+      responses:
+        '200':
+          description: Liste des cartes récupérée avec succès
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CardsListResponse'
+              example:
+                cards:
+                  - id: 1
+                    name: Bulbasaur
+                    hp: 45
+                    attack: 49
+                    type: grass
+                    pokedexNumber: 1
+                    imgUrl: https://example.com/bulbasaur.png
+                  - id: 2
+                    name: Ivysaur
+                    hp: 60
+                    attack: 62
+                    type: grass
+                    pokedexNumber: 2
+                    imgUrl: https://example.com/ivysaur.png
+                  - id: 3
+                    name: Venusaur
+                    hp: 80
+                    attack: 82
+                    type: grass
+                    pokedexNumber: 3
+                    imgUrl: https://example.com/venusaur.png
+        '500':
+          description: Erreur serveur
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error: Erreur serveur
